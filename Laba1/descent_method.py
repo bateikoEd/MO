@@ -3,9 +3,11 @@ from numpy import linalg as npl
 
 import functions as f
 
+"""alpha is changed after every steps"""
 alpha_k = lambda x: np.float(
     np.dot(f.vector_h(x), f.vector_h(x)) / np.dot(np.dot(f.matrix_A, f.vector_h(x)), f.vector_h(x)))
 
+'''xk started point in method'''
 count = 1
 xk = np.array([0, 0], dtype=float)
 vector_h1 = f.vector_h(xk)

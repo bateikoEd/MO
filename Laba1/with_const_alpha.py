@@ -3,6 +3,8 @@ from numpy import linalg as npl
 
 import functions as f
 
+'''xk started point in method'''
+"""alpha is a constant"""
 
 count = 1
 xk = np.array([0, 0], dtype=float)
@@ -22,6 +24,5 @@ with open(file_name, "w+") as file:
 
         line = f"\ncount = \t{count}\n xk =\t{xk}\nfunc(xk) = {f.func(xk)}\n h =\t{vector_h1}\nalpha =\t {alpha_k1}"
         file.write(line)
-
 
 print(f" count = \t{count}\nx* =\t{xk} \n func(xk) = {f.func(xk)}\n gradient(xk) = \t{f.gradient(xk)}")

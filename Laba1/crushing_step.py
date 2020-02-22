@@ -3,10 +3,11 @@ from numpy import linalg as npl
 
 import functions as f
 
-
+"""const lambda = 1/2 , betta = 1"""
 const_lambda = np.float(0.5)
 const_betta = np.float(1)
 
+'''xk started point in method'''
 count = 1
 xk = np.array([0, 0], dtype=float)
 vector_h1 = f.vector_h(xk)
@@ -32,4 +33,3 @@ with open(file_name, "w+") as file:
         file.write(line)
 
 print(f"****count = \t{count}\nx* =\t{xk} \n func(xk) = {f.func(xk)}\n gradient(xk) = \t{f.gradient(xk)}")
-print(f"func1:\t{f.func(xk)}\nfunc2:\t{f.func([2.1, 1])}")
