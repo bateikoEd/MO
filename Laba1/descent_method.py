@@ -1,4 +1,5 @@
 import numpy as np
+import pygal
 from numpy import linalg as npl
 
 import functions as f
@@ -17,6 +18,8 @@ const_func_xk_1 = np.float(f.func(xk + np.array(f.multiply_on_const(vector_h1, a
 
 file_name = 'descent_method.txt'
 
+vector_x = [xk]
+
 with open(file_name, "w+") as file:
     line = f"\ncount = \t{count}\n xk =\t{xk}\n h =\t{vector_h1}\n alpha =\t {alpha_k1}"
     file.write(line)
@@ -29,8 +32,16 @@ with open(file_name, "w+") as file:
         const_func_xk_1 = np.float(f.func(xk + np.array(f.multiply_on_const(vector_h1, alph=alpha_k1))))
         count += 1
 
+        vector_x.append(xk)
+
         line = f"\ncount = \t{count}\n xk =\t{xk}\nfunc(xk) = {f.func(xk)}\n h =\t{vector_h1}\nalpha =\t {alpha_k1}"
         file.write(line)
 
-
 print(f" count = \t{count}\nx* =\t{xk} \n func(xk) = {f.func(xk)}\n gradient(xk) = \t{f.gradient(xk)}")
+
+xy_chart = pygal.XY()
+xy_chart.title = 'descent_method'
+result = [(elem[0], elem[1]) for elem in vector_x]
+xy_chart.add('dots', result)
+
+xy_chart.render_to_file('descent_method.svg')

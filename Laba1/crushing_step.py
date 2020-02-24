@@ -1,4 +1,5 @@
 import numpy as np
+import pygal
 from numpy import linalg as npl
 
 import functions as f
@@ -16,6 +17,8 @@ const_func_xk_1 = f.func(xk + f.multiply_on_const(vector_h1, alpha_k1))
 
 file_name = "crushing_step.txt"
 
+vector_x = [xk]
+
 with open(file_name, "w+") as file:
     line = f"\ncount = \t{count}\n xk =\t{xk}\n h =\t{vector_h1}\n alpha =\t {alpha_k1}"
     file.write(line)
@@ -29,7 +32,16 @@ with open(file_name, "w+") as file:
         alpha_k1 = np.dot(alpha_k1, const_lambda)
         count += 1
 
+        vector_x.append(xk)
+
         line = f"\ncount = \t{count}\n xk =\t{xk}\nfunc(xk) = {f.func(xk)}\n h =\t{vector_h1} \nalpha =\t {alpha_k1}"
         file.write(line)
 
 print(f"****count = \t{count}\nx* =\t{xk} \n func(xk) = {f.func(xk)}\n gradient(xk) = \t{f.gradient(xk)}")
+
+xy_chart = pygal.XY()
+xy_chart.title = 'crushing_step'
+result = [(elem[0], elem[1]) for elem in vector_x]
+xy_chart.add('dots', result)
+
+xy_chart.render_to_file('crushing_step.svg')
