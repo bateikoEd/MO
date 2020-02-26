@@ -10,18 +10,17 @@ alpha_k = lambda x: np.float(
 
 '''xk started point in method'''
 count = 1
-xk = np.array([0, 0], dtype=float)
-vector_h1 = f.vector_h(xk)
-alpha_k1 = alpha_k(xk)
+vector_h1 = f.vector_h(f.xk)
+alpha_k1 = alpha_k(f.xk)
 
-const_func_xk_1 = np.float(f.func(xk + np.array(f.multiply_on_const(vector_h1, alph=alpha_k1))))
+const_func_xk_1 = np.float(f.func(f.xk + np.array(f.multiply_on_const(vector_h1, alph=alpha_k1))))
 
 file_name = 'descent_method.txt'
 
-vector_x = [xk]
+vector_x = [f.xk]
 
 with open(file_name, "w+") as file:
-    line = f"\ncount = \t{count}\n xk =\t{xk}\n h =\t{vector_h1}\n alpha =\t {alpha_k1}"
+    line = f"\ncount = \t{count}\n xk =\t{f.xk}\n h =\t{vector_h1}\n alpha =\t {alpha_k1}"
     file.write(line)
 
     while npl.norm(vector_h1) > f.h:

@@ -8,9 +8,9 @@ import functions as f
 const_lambda = np.float(0.5)
 const_betta = np.float(1)
 
+xk = f.xk
 '''xk started point in method'''
 count = 1
-xk = np.array([0, 0], dtype=float)
 vector_h1 = f.vector_h(xk)
 alpha_k1 = const_betta
 const_func_xk_1 = f.func(xk + f.multiply_on_const(vector_h1, alpha_k1))
@@ -29,7 +29,7 @@ with open(file_name, "w+") as file:
         const_func_xk_1 = f.func(xk + f.multiply_on_const(vector_h1, alpha_k1))
 
         vector_h1 = f.vector_h(xk)
-        alpha_k1 = np.dot(alpha_k1, const_lambda)
+        alpha_k1 = np.dot(alpha_k1, const_lambda**2)
         count += 1
 
         vector_x.append(xk)

@@ -7,15 +7,15 @@ import functions as f
 
 '''xk started point in method'''
 """alpha is a constant"""
+xk = f.xk
 
 count = 1
-xk = np.array([0, 0], dtype=float)
 vector_h1 = f.vector_h(xk)
 alpha_k1 = np.float(0.01)
 
 file_name = 'with_const_alpha.txt'
 
-vector_x = [xk]
+vector_x = [f.xk]
 
 with open(file_name, "w+") as file:
     line = f"\ncount = \t{count}\n xk =\t{xk}\n h =\t{vector_h1}\n alpha =\t {alpha_k1}"
