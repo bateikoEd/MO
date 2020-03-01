@@ -157,35 +157,36 @@ class Optimization():
         if xk1 is None:
             xk1 = [0, 0]
 
-        xk_vector = xk1
+        double_derivation_matrix = self.double_derivation_function(xk1)
+        vector_h1 = npl.tensorsolve(double_derivation_matrix, - self.gradient(xk1))
+
+        xk_vector = xk1 + vector_h1
         count = 1
-        double_derivation_matrix = self.double_derivation_function(xk_vector)
 
-        vector_h1 = npl.tensorsolve(double_derivation_matrix, - self.gradient(xk_vector))
-        vector_x = [xk_vector]
-        if alpha != 1:
-            const_func_xk_1 = self.func(xk_vector + multiply_on_const(vector_h1, alpha))
-        else:
-            const_func_xk_1 = self.func(xk_vector + vector_h1)
+        # vector_x = [xk_vector]
+        const_func_xk_1 = self.func(xk_vector)
 
-        condition_const = np.abs(const_func_xk_1 - self.func(xk_vector) -
-                                 epsilon*alpha*np.dot(self.gradient(xk_vector), vector_h1))
+        condition_const = np.abs(const_func_xk_1 - self.func(xk1) -
+                                 epsilon*alpha*np.dot(self.gradient(xk1), vector_h1))
 
         create_file(file_name)
         self.string_add_in_file(count, xk_vector, vector_h1, alpha, file_name)
 
+        #дроблення кроку
         while condition_const > self.h:
-            xk_vector = xk_vector + vector_h1
+            alpha *= 0.5
+
+            double_derivation_matrix = self.double_derivation_function(xk_vector)
             vector_h1 = npl.tensorsolve(double_derivation_matrix, - self.gradient(xk_vector))
 
-            if alpha != 1:
-                const_func_xk_1 = self.func(xk_vector + multiply_on_const(vector_h1, alpha))
-            else:
-                const_func_xk_1 = self.func(xk_vector + vector_h1)
+            xk_vector = xk_vector + multiply_on_const(vector_h1, alpha)
+
+            const_func_xk_1 = self.func(xk_vector + multiply_on_const(vector_h1, alpha))
+
             condition_const = np.abs(const_func_xk_1 - self.func(xk_vector) -
                                      epsilon * alpha * np.dot(self.gradient(xk_vector), vector_h1))
             count += 1
-            vector_x.append(xk_vector)
+            #vector_x.append(xk_vector)
 
             print(self.print_result(count, xk_vector, alpha))
 
