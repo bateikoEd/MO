@@ -12,25 +12,27 @@ xk = f.xk
 '''xk started point in method'''
 count = 1
 vector_h1 = f.vector_h(xk)
-alpha_k1 = const_betta
+alpha_k1 = np.float(const_betta*const_lambda)
 const_func_xk_1 = f.func(xk + f.multiply_on_const(vector_h1, alpha_k1))
 
 file_name = "crushing_step.txt"
 
 vector_x = [xk]
-
+count_power = 1
 with open(file_name, "w+") as file:
     line = f"\ncount = \t{count}\n xk =\t{xk}\n h =\t{vector_h1}\n alpha =\t {alpha_k1}"
     file.write(line)
 
-    while np.abs(const_func_xk_1 - f.func(xk)) > f.h:
+    while npl.norm(vector_h1) > f.h:
 
         xk = xk + np.array(f.multiply_on_const(vector_h1, alph=alpha_k1))
         const_func_xk_1 = f.func(xk + f.multiply_on_const(vector_h1, alpha_k1))
 
         vector_h1 = f.vector_h(xk)
-        alpha_k1 = np.dot(alpha_k1, const_lambda**2)
         count += 1
+        if np.abs(const_func_xk_1 - f.func(xk)) > f.h:
+            alpha_k1 = np.dot(const_betta, const_lambda ** 2)
+            count_power += 1
 
         vector_x.append(xk)
 

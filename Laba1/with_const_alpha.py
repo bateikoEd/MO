@@ -11,7 +11,7 @@ xk = f.xk
 
 count = 1
 vector_h1 = f.vector_h(xk)
-alpha_k1 = np.float(0.01)
+alpha_k1 = np.float(0.0001)
 
 file_name = 'with_const_alpha.txt'
 
@@ -27,6 +27,8 @@ with open(file_name, "w+") as file:
         count += 1
 
         vector_x.append(xk)
+
+        #print(f"xk:\t{xk}\ncount:\t{count}")
 
         line = f"\ncount = \t{count}\n xk =\t{xk}\nfunc(xk) = {f.func(xk)}\n h =\t{vector_h1}\nalpha =\t {alpha_k1}"
         file.write(line)

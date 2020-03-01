@@ -9,30 +9,32 @@ alpha_k = lambda x: np.float(
     np.dot(f.vector_h(x), f.vector_h(x)) / np.dot(np.dot(f.matrix_A, f.vector_h(x)), f.vector_h(x)))
 
 '''xk started point in method'''
-count = 1
-vector_h1 = f.vector_h(f.xk)
-alpha_k1 = alpha_k(f.xk)
+xk = f.xk
 
-const_func_xk_1 = np.float(f.func(f.xk + np.array(f.multiply_on_const(vector_h1, alph=alpha_k1))))
+count = 1
+vector_h1 = f.vector_h(xk)
+alpha_k1 = alpha_k(xk)
+
+const_func_xk_1 = np.float(f.func(xk + np.array(f.multiply_on_const(vector_h1, alph=alpha_k1))))
 
 file_name = 'descent_method.txt'
-
-vector_x = [f.xk]
-
+vector_x = [xk]
+xk_1 = xk
 with open(file_name, "w+") as file:
     line = f"\ncount = \t{count}\n xk =\t{f.xk}\n h =\t{vector_h1}\n alpha =\t {alpha_k1}"
     file.write(line)
 
-    while npl.norm(vector_h1) > f.h:
+    while np.abs(const_func_xk_1 - f.func(xk)) > f.h:
         xk = xk + np.array(f.multiply_on_const(vector_h1, alph=alpha_k1))
         vector_h1 = f.vector_h(xk)
         alpha_k1 = alpha_k(xk)
 
         const_func_xk_1 = np.float(f.func(xk + np.array(f.multiply_on_const(vector_h1, alph=alpha_k1))))
+
         count += 1
 
         vector_x.append(xk)
-
+        print(f"xk:\t{xk}\ncount:\t{count}")
         line = f"\ncount = \t{count}\n xk =\t{xk}\nfunc(xk) = {f.func(xk)}\n h =\t{vector_h1}\nalpha =\t {alpha_k1}"
         file.write(line)
 
