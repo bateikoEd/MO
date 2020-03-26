@@ -1,6 +1,6 @@
 import numpy as np
 from numpy import linalg as npl
-import pygal
+import matplotlib.pyplot as plt
 
 
 def multiply_on_const(x, alph=1.):
@@ -15,8 +15,28 @@ def create_file(file_name='ok'):
         f.write(file_name)
 
 
+def create_pot(x_label_name='x_label', y_label_name='y_label', plot_title='plot_title'):
+    plt.xlabel(x_label_name)
+    plt.ylabel(y_label_name)
+    plt.title(plot_title)
+
+
+def create_arrows(vector_x, name_text='none', arrow_style="->", color='r'):
+    len_of_vector_x = len(vector_x)
+
+    for i in range(0, len_of_vector_x - 1):
+        plt.annotate(f"{i}", xytext=(vector_x[i][0], vector_x[i][1]), xy=(vector_x[i + 1][0], vector_x[i + 1][1]),
+                     arrowprops=dict(arrowstyle=arrow_style, color=color))
+
+    plt.xlim(vector_x[0][0] - 1, vector_x[len_of_vector_x - 1][0] + 1)
+    plt.ylim(vector_x[1][0] - 1, vector_x[len_of_vector_x - 1][1] + 1)
+
+
+def show_plot():
+    plt.show()
+
+
 class Optimization():
-    # func = lambda x: np.float(np.exp(x[0] ** 2 + x[1] ** 2))
 
     matrix_A = np.array([[4, -0.01], [-0.01, 16]], dtype=float)
     vector_b = np.array([1, -1], dtype=float)
@@ -69,7 +89,7 @@ class Optimization():
         with open(file_name, "a") as f:
             f.writelines(line)
 
-    def descent_method(self, xk1=None, file_name='descent_method.txt'):
+    def descent_method(self, xk1=None, file_name='descent_method.txt', color='r'):
         if xk1 is None:
             xk1 = [0, 0]
 
@@ -99,7 +119,12 @@ class Optimization():
 
             self.string_add_in_file(count, xk_vector, vector_h1, alpha_k1, file_name)
 
-    def with_constant_method(self, xk1=None, alpha=np.float(10 ** (-3)), file_name='with_const_alpha.txt'):
+        # create arrows
+        create_arrows(vector_x, color=color)
+
+        return xk_vector
+
+    def with_constant_method(self, xk1=None, alpha=np.float(10 ** (-3)), file_name='with_const_alpha.txt', color='r'):
         if xk1 is None:
             xk1 = [0, 0]
 
@@ -121,7 +146,13 @@ class Optimization():
 
             self.string_add_in_file(count, xk_vector, vector_h1, alpha, file_name)
 
-    def crushing_step_method(self, xk1=None, const_lambda=np.float(0.5),  const_betta = np.float(1), file_name="crushing_step.txt"):
+        # create arrows
+        create_arrows(vector_x,color=color)
+
+        return xk_vector
+
+    def crushing_step_method(self, xk1=None, const_lambda=np.float(0.5),  const_betta=np.float(1),
+                             file_name="crushing_step.txt", color='b'):
         if xk1 is None:
             xk1 = [0, 0]
 
@@ -153,7 +184,12 @@ class Optimization():
 
             self.string_add_in_file(count, xk_vector, vector_h1, alpha_k1, file_name)
 
-    def newton_method(self, xk1=None, alpha=1,epsilon=0.01, file_name='newton_method.txt'):
+        # create arrows
+        create_arrows(vector_x, color=color)
+
+        return xk_vector
+
+    def newton_method(self, xk1=None, alpha=1,epsilon=0.01, file_name='newton_method.txt', color='g'):
         if xk1 is None:
             xk1 = [0, 0]
 
@@ -163,7 +199,7 @@ class Optimization():
         xk_vector = xk1 + vector_h1
         count = 1
 
-        # vector_x = [xk_vector]
+        vector_x = [xk1, xk_vector]
         const_func_xk_1 = self.func(xk_vector)
 
         condition_const = np.abs(const_func_xk_1 - self.func(xk1) -
@@ -172,7 +208,6 @@ class Optimization():
         create_file(file_name)
         self.string_add_in_file(count, xk_vector, vector_h1, alpha, file_name)
 
-        #дроблення кроку
         while condition_const > self.h:
             alpha *= 0.5
 
@@ -186,8 +221,13 @@ class Optimization():
             condition_const = np.abs(const_func_xk_1 - self.func(xk_vector) -
                                      epsilon * alpha * np.dot(self.gradient(xk_vector), vector_h1))
             count += 1
-            #vector_x.append(xk_vector)
+            vector_x.append(xk_vector)
 
             print(self.print_result(count, xk_vector, alpha))
 
             self.string_add_in_file(count, xk_vector, vector_h1, alpha, file_name)
+
+        # create arrows
+        create_arrows(vector_x, color=color)
+
+        return xk_vector
