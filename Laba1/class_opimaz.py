@@ -7,7 +7,7 @@ def multiply_on_const(x, alph=1.):
     y = []
     for elem in x:
         y.append(elem * alph)
-    return y
+    return np.array(y)
 
 
 def create_file(file_name='ok'):
@@ -50,11 +50,23 @@ class Optimization():
                                                           Optimization.func([x[0], x[1] - Optimization.h])) / (
                                                              2 * Optimization.h))]))
 
+    gradient_3 = staticmethod(lambda x: np.array([(np.float(Optimization.func([x[0] + Optimization.h, x[1], x[2]]) -
+                                                          Optimization.func([x[0] - Optimization.h, x[1], x[2]])) / (
+                                                             2 * Optimization.h)),
+                                            (np.float(Optimization.func([x[0], x[1] + Optimization.h, x[2]]) -
+                                                          Optimization.func([x[0], x[1] - Optimization.h], x[2])) / (
+                                                             2 * Optimization.h)),
+                                              (np.float(Optimization.func([x[0], x[1], x[2] + Optimization.h]) -
+                                                       Optimization.func([x[0], x[1], x[2] - Optimization.h])) / (
+                                                      2 * Optimization.h))]))
+
     vector_h_for_gradient_method = staticmethod(lambda x: - Optimization.gradient(x))
     alpha_k_for_descent_method = staticmethod(lambda x: np.float(
         npl.norm(Optimization.vector_h_for_gradient_method(x)) ** 2 /
         np.dot(np.dot(Optimization.matrix_A, Optimization.vector_h_for_gradient_method(x)),
                Optimization.vector_h_for_gradient_method(x))))
+
+    alpha_derivative = staticmethod(lambda x: x*0.5)
 
     def __init__(self, func1,
                  h=np.float(10 ** (-3)),
@@ -189,7 +201,7 @@ class Optimization():
 
         return xk_vector
 
-    def newton_method(self, xk1=None, alpha=1,epsilon=0.01, file_name='newton_method.txt', color='g'):
+    def newton_method(self, xk1=None, alpha=1, epsilon=0.01, file_name='newton_method.txt', color='g'):
         if xk1 is None:
             xk1 = [0, 0]
 
@@ -231,3 +243,33 @@ class Optimization():
         create_arrows(vector_x, color=color)
 
         return xk_vector
+
+
+    def gradient_projection_method(self, xk=None, vector_const1=None, vector_const2=None, alpha=1):
+        if xk is None:
+            xk = np.array([0., 0, 0])
+        if vector_const1 is None:
+            vector_const1 = np.array([1., 1, 1])
+        if vector_const2 is None:
+            vector_const1 = np.array([1., 1, 1, 1])
+
+        xk = np.array(xk)
+        vector_for_xk = [xk]
+
+        print(f"xk:\t{xk}\nvector1:\t{vector_const1}\nvector2:\t{vector_const2}\nalpha:\t{alpha}")
+
+        while npl.norm(self.gradient(xk)) > self.h:
+            alpha = self.alpha_derivative(alpha)
+            const_1 = 1./(vector_const2[0] ** 2 + vector_const2[1] ** 2 + vector_const2[2] ** 2)
+            my_lambda = const_1 * vector_const2[3] - const_1 * np.dot(vector_const2[:3], xk)
+
+            print(f"alpha:\t{alpha}\tconst_1:\t{const_1}\tmy_lambda:\t{my_lambda}")
+
+            xk = xk - multiply_on_const(self.gradient_3(xk), alph=alpha) + \
+                 multiply_on_const(vector_const2[0:3], alph=my_lambda)
+
+            print(f"xk:\t{xk}\tfunc:\t{self.func(xk)}")
+
+            vector_for_xk.append(xk)
+
+        return xk
