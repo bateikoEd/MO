@@ -17,14 +17,17 @@ vector_const1 = [a, b, c]
 vector_const2 = [d, e, r, m]
 
 func = lambda x: np.float(a * x[0] ** 2 + b * x[1] ** 2 + c * x[2] ** 2)
-h = 10 ** (-4)
-alpha = 1
-optimazation_function_object = Optimization(func, h)
-xk = np.array([0, 0, 0])
+substitution = lambda x : np.dot(x,vector_const2[:3]) - m
+
+h = 10 ** (-10)
+alpha = 0.5
+
+object = Optimization(func, h)
+xk = np.array([1, -1, -2])
 
 # print(f"gradient_method:\t{x_res_grad}\nnewthon_method:\t{x_res_newton}")
 # show_plot()
-
-xk = optimazation_function_object.gradient_projection_method(xk, vector_const1=vector_const1, vector_const2=vector_const2,
-                                                             alpha=alpha)
-print(xk)
+print(f"xo:\t{xk}")
+xk = object.gradient_projection_method(xk, vector_const2=vector_const2,
+                                                              alpha=alpha)
+print(substitution(xk))

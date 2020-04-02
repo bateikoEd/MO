@@ -37,28 +37,10 @@ def show_plot():
 
 
 class Optimization():
-
     matrix_A = np.array([[4, -0.01], [-0.01, 16]], dtype=float)
     vector_b = np.array([1, -1], dtype=float)
-    h = np.float(10)
     func = staticmethod(
         lambda x: np.float(0.5 * np.dot(np.dot(Optimization.matrix_A, x), x) + np.dot(Optimization.vector_b, x)))
-    gradient = staticmethod(lambda x: np.array([(np.float(Optimization.func([x[0] + Optimization.h, x[1]]) -
-                                                          Optimization.func([x[0] - Optimization.h, x[1]])) / (
-                                                             2 * Optimization.h)),
-                                                (np.float(Optimization.func([x[0], x[1] + Optimization.h]) -
-                                                          Optimization.func([x[0], x[1] - Optimization.h])) / (
-                                                             2 * Optimization.h))]))
-
-    gradient_3 = staticmethod(lambda x: np.array([(np.float(Optimization.func([x[0] + Optimization.h, x[1], x[2]]) -
-                                                          Optimization.func([x[0] - Optimization.h, x[1], x[2]])) / (
-                                                             2 * Optimization.h)),
-                                            (np.float(Optimization.func([x[0], x[1] + Optimization.h, x[2]]) -
-                                                          Optimization.func([x[0], x[1] - Optimization.h], x[2])) / (
-                                                             2 * Optimization.h)),
-                                              (np.float(Optimization.func([x[0], x[1], x[2] + Optimization.h]) -
-                                                       Optimization.func([x[0], x[1], x[2] - Optimization.h])) / (
-                                                      2 * Optimization.h))]))
 
     vector_h_for_gradient_method = staticmethod(lambda x: - Optimization.gradient(x))
     alpha_k_for_descent_method = staticmethod(lambda x: np.float(
@@ -66,7 +48,7 @@ class Optimization():
         np.dot(np.dot(Optimization.matrix_A, Optimization.vector_h_for_gradient_method(x)),
                Optimization.vector_h_for_gradient_method(x))))
 
-    alpha_derivative = staticmethod(lambda x: x*0.5)
+    alpha_derivative = staticmethod(lambda x: x * 0.5)
 
     def __init__(self, func1,
                  h=np.float(10 ** (-3)),
@@ -77,26 +59,50 @@ class Optimization():
         self.matrix_A = matrix_A1.copy()
         self.vector_b = vector_b.copy()
 
+    def gradient(self, x):
+
+        return np.array([(np.float(self.func([x[0] + self.h, x[1]]) -
+                                   self.func([x[0] - self.h, x[1]])) / (
+                                  2 * self.h)),
+                         (np.float(self.func([x[0], x[1] + self.h]) -
+                                   self.func([x[0], x[1] - self.h])) / (
+                                  2 * self.h))])
+
+    def gradient_3(self, x):
+        return np.array([np.float((self.func([x[0] + self.h, x[1], x[2]]) -
+                                   self.func([x[0] - self.h, x[1], x[2]])) / (
+                                          2 * self.h)),
+                         np.float((self.func([x[0], x[1] + self.h, x[2]]) -
+                                   self.func([x[0], x[1] - self.h, x[2]])) / (
+                                          2 * self.h)),
+                         (np.float((self.func([x[0], x[1], x[2] + self.h]) -
+                                    self.func([x[0], x[1], x[2] - self.h])) / (
+                                           2 * self.h)))])
+
     def double_derivation_function(self, xk_vector):
         a11 = np.float((self.func([xk_vector[0] + self.h, xk_vector[1]]) -
                         2.0 * self.func(xk_vector) +
-                       self.func([xk_vector[0] - self.h, xk_vector[1]])) / self.h**2)
+                        self.func([xk_vector[0] - self.h, xk_vector[1]])) / self.h ** 2)
         a22 = np.float((self.func([xk_vector[0], xk_vector[1] + self.h]) -
                         2.0 * self.func(xk_vector) +
-                       self.func([xk_vector[0], xk_vector[1] - self.h])) / self.h**2)
+                        self.func([xk_vector[0], xk_vector[1] - self.h])) / self.h ** 2)
         a21 = np.float((self.func([xk_vector[0] + self.h, xk_vector[1] + self.h]) -
                         self.func([xk_vector[0] - self.h, xk_vector[1] + self.h]) -
                         self.func([xk_vector[0] + self.h, xk_vector[1] - self.h]) +
-                        self.func([xk_vector[0] - self.h, xk_vector[1] - self.h])) / (4 * self.h**2))
+                        self.func([xk_vector[0] - self.h, xk_vector[1] - self.h])) / (4 * self.h ** 2))
 
         return np.array([[a11, a21], [a21, a22]])
 
     def print_result(self, count, xk1, alpha):
-        print(f" count = \t{count}\nx* =\t{xk1} \n func(xk) = {self.func(xk1)}\n gradient(xk) = "
-              f"\t{self.gradient(xk1)}\n alpha = \t{alpha}")
+        print(f" count = \t{count}\nx* =\t{xk1} \n func(xk) = {self.func(xk1)}\nalpha = \t{alpha}")
 
     def string_add_in_file(self, count, xk1, vector_h, alpha, file_name):
-        line = f"\ncount = \t{count}\n xk =\t{xk1}\nfunc(xk) = {self.func(xk1)}\n h =\t{vector_h}\nalpha =\t {alpha}"
+        line = f"\ncount = \t{count}\n xk =\t{xk1}\nfunc(xk) = {self.func(xk1)}\n h =\t{vector_h}\nalpha =\t {alpha}\n"
+        with open(file_name, "a") as f:
+            f.writelines(line)
+
+    def string_add_in_file_projection(self, count, xk1, alpha, file_name):
+        line = f"\ncount = \t{count}\n xk =\t{xk1}\nfunc(xk) = {self.func(xk1)}\nalpha =\t {alpha}\n"
 
         with open(file_name, "a") as f:
             f.writelines(line)
@@ -159,11 +165,11 @@ class Optimization():
             self.string_add_in_file(count, xk_vector, vector_h1, alpha, file_name)
 
         # create arrows
-        create_arrows(vector_x,color=color)
+        create_arrows(vector_x, color=color)
 
         return xk_vector
 
-    def crushing_step_method(self, xk1=None, const_lambda=np.float(0.5),  const_betta=np.float(1),
+    def crushing_step_method(self, xk1=None, const_lambda=np.float(0.5), const_betta=np.float(1),
                              file_name="crushing_step.txt", color='b'):
         if xk1 is None:
             xk1 = [0, 0]
@@ -215,7 +221,7 @@ class Optimization():
         const_func_xk_1 = self.func(xk_vector)
 
         condition_const = np.abs(const_func_xk_1 - self.func(xk1) -
-                                 epsilon*alpha*np.dot(self.gradient(xk1), vector_h1))
+                                 epsilon * alpha * np.dot(self.gradient(xk1), vector_h1))
 
         create_file(file_name)
         self.string_add_in_file(count, xk_vector, vector_h1, alpha, file_name)
@@ -244,31 +250,61 @@ class Optimization():
 
         return xk_vector
 
-
-    def gradient_projection_method(self, xk=None, vector_const1=None, vector_const2=None, alpha=1):
+    def gradient_projection_method(self, xk=None, vector_const2=None, alpha=1, file_name="projection_mathod.txt"):
         if xk is None:
             xk = np.array([0., 0, 0])
-        if vector_const1 is None:
-            vector_const1 = np.array([1., 1, 1])
         if vector_const2 is None:
             vector_const1 = np.array([1., 1, 1, 1])
 
+        create_file(file_name=file_name)
+
         xk = np.array(xk)
+        vector_const2 = np.array(vector_const2)
+
         vector_for_xk = [xk]
 
-        print(f"xk:\t{xk}\nvector1:\t{vector_const1}\nvector2:\t{vector_const2}\nalpha:\t{alpha}")
+        # self.print_result(0,xk ,alpha)
+        # print(f"xk:\t{xk}\nvector1:\t{vector_const1}\nvector2:\t{vector_const2}\nalpha:\t{alpha}")
+        count = 0
+        xk_1 = xk
+        self.string_add_in_file_projection(count=count, xk1=xk, file_name=file_name,alpha=alpha)
 
-        while npl.norm(self.gradient(xk)) > self.h:
+        count = 1
+        # alpha = self.alpha_derivative(alpha)
+        const_1 = 1./(vector_const2[0] ** 2 + vector_const2[1] ** 2 + vector_const2[2] ** 2)
+        my_lambda = const_1 * (vector_const2[3] - np.dot(vector_const2[:3], xk))
+
+        grad = self.gradient_3(xk)
+
+        xk_multi_on_const = xk - multiply_on_const(grad, alph=alpha)
+        lambda_mult_const2 = multiply_on_const(vector_const2[0:3], alph=my_lambda)
+
+        xk = xk_multi_on_const + lambda_mult_const2
+
+        self.string_add_in_file_projection(count=count, xk1=xk, file_name=file_name,alpha=alpha)
+
+        # print(f"lambda_k:\t{my_lambda}\talpha_k:\t{alpha}\ngrad_k:{grad}\n"
+        #       f"xk-alpha*grad_k:\t{xk_multi_on_const}\n"
+        #       f"const_2_on_xk:\t{lambda_mult_const2}\n"
+        #       f"res:\t{xk}\nfunc:\t{self.func(xk)}\n")
+
+        while npl.norm(xk - xk_1) > self.h:
+            xk_1 = xk
+
             alpha = self.alpha_derivative(alpha)
-            const_1 = 1./(vector_const2[0] ** 2 + vector_const2[1] ** 2 + vector_const2[2] ** 2)
-            my_lambda = const_1 * vector_const2[3] - const_1 * np.dot(vector_const2[:3], xk)
 
-            print(f"alpha:\t{alpha}\tconst_1:\t{const_1}\tmy_lambda:\t{my_lambda}")
+            const_1 = np.float(1./(vector_const2[0] ** 2 + vector_const2[1] ** 2 + vector_const2[2] ** 2))
+            my_lambda = np.float(const_1 * (vector_const2[3] - np.dot(vector_const2[:3], xk)))
 
-            xk = xk - multiply_on_const(self.gradient_3(xk), alph=alpha) + \
-                 multiply_on_const(vector_const2[0:3], alph=my_lambda)
+            grad = self.gradient_3(xk)
 
-            print(f"xk:\t{xk}\tfunc:\t{self.func(xk)}")
+            xk_multi_on_const = xk - multiply_on_const(grad, alph=alpha)
+            lambda_mult_const2 = multiply_on_const(vector_const2[0:3], alph=my_lambda)
+
+            xk = xk_multi_on_const + lambda_mult_const2
+
+            count += 1
+            self.string_add_in_file_projection(count=count, xk1=xk, file_name=file_name, alpha=alpha)
 
             vector_for_xk.append(xk)
 
