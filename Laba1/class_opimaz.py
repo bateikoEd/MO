@@ -3,13 +3,6 @@ from numpy import linalg as npl
 import matplotlib.pyplot as plt
 
 
-def multiply_on_const(x, alph=1.):
-    y = []
-    for elem in x:
-        y.append(elem * alph)
-    return np.array(y)
-
-
 def create_file(file_name='ok'):
     with open(file_name, "w+") as f:
         f.write(file_name)
@@ -116,7 +109,7 @@ class Optimization():
         vector_h1 = self.vector_h_for_gradient_method(xk_vector)
         alpha_k1 = self.alpha_k_for_descent_method(xk_vector)
 
-        const_func_xk_1 = np.float(self.func(xk_vector + np.array(multiply_on_const(vector_h1, alph=alpha_k1))))
+        const_func_xk_1 = np.float(self.func(xk_vector + np.array(vector_h1 * alpha_k1)))
 
         vector_x = [xk_vector]
         xk_1 = xk_vector
@@ -125,11 +118,11 @@ class Optimization():
         self.string_add_in_file(count, xk_vector, vector_h1, alpha_k1, file_name)
 
         while np.abs(const_func_xk_1 - self.func(xk_vector)) > self.h:
-            xk_vector = xk_vector + np.array(multiply_on_const(vector_h1, alph=alpha_k1))
+            xk_vector = xk_vector + np.array(vector_h1 * alpha_k1)
             vector_h1 = self.vector_h_for_gradient_method(xk_vector)
             alpha_k1 = self.alpha_k_for_descent_method(xk_vector)
 
-            const_func_xk_1 = np.float(self.func(xk_vector + np.array(multiply_on_const(vector_h1, alph=alpha_k1))))
+            const_func_xk_1 = np.float(self.func(xk_vector + np.array(vector_h1 * alpha_k1)))
 
             count += 1
             vector_x.append(xk_vector)
@@ -156,7 +149,7 @@ class Optimization():
         create_file(file_name)
         self.string_add_in_file(count, xk_vector, vector_h1, alpha, file_name)
         while npl.norm(vector_h1) > self.h:
-            xk_vector = xk_vector + np.array(multiply_on_const(vector_h1, alph=alpha))
+            xk_vector = xk_vector + np.array(vector_h1 * alpha)
             vector_h1 = self.vector_h_for_gradient_method(xk_vector)
             count += 1
 
@@ -179,7 +172,7 @@ class Optimization():
         count = 1
         vector_h1 = self.vector_h_for_gradient_method(xk_vector)
         alpha_k1 = np.float(const_betta * const_lambda)
-        const_func_xk_1 = self.func(xk_vector + multiply_on_const(vector_h1, alpha_k1))
+        const_func_xk_1 = self.func(xk_vector + vector_h1 * alpha_k1)
 
         vector_x = [xk_vector]
         count_power = 1
@@ -189,8 +182,8 @@ class Optimization():
 
         while npl.norm(vector_h1) > self.h:
 
-            xk_vector = xk_vector + np.array(multiply_on_const(vector_h1, alph=alpha_k1))
-            const_func_xk_1 = self.func(xk_vector + multiply_on_const(vector_h1, alpha_k1))
+            xk_vector = xk_vector + np.array(vector_h1 * alpha_k1)
+            const_func_xk_1 = self.func(xk_vector + vector_h1 * alpha_k1)
 
             vector_h1 = self.vector_h_for_gradient_method(xk_vector)
             count += 1
@@ -232,9 +225,9 @@ class Optimization():
             double_derivation_matrix = self.double_derivation_function(xk_vector)
             vector_h1 = npl.tensorsolve(double_derivation_matrix, - self.gradient(xk_vector))
 
-            xk_vector = xk_vector + multiply_on_const(vector_h1, alpha)
+            xk_vector = xk_vector + vector_h1 * alpha
 
-            const_func_xk_1 = self.func(xk_vector + multiply_on_const(vector_h1, alpha))
+            const_func_xk_1 = self.func(xk_vector + vector_h1 * alpha)
 
             condition_const = np.abs(const_func_xk_1 - self.func(xk_vector) -
                                      epsilon * alpha * np.dot(self.gradient(xk_vector), vector_h1))
@@ -263,8 +256,6 @@ class Optimization():
 
         vector_for_xk = [xk]
 
-        # self.print_result(0,xk ,alpha)
-        # print(f"xk:\t{xk}\nvector1:\t{vector_const1}\nvector2:\t{vector_const2}\nalpha:\t{alpha}")
         count = 0
         xk_1 = xk
         self.string_add_in_file_projection(count=count, xk1=xk, file_name=file_name,alpha=alpha)
@@ -276,11 +267,12 @@ class Optimization():
 
         grad = self.gradient_3(xk)
 
-        xk_multi_on_const = xk - multiply_on_const(grad, alph=alpha)
-        lambda_mult_const2 = multiply_on_const(vector_const2[0:3], alph=my_lambda)
+        xk_multi_on_const = xk - grad * alpha
+        lambda_mult_const2 = np.array(vector_const2[0:3]) * my_lambda
 
         xk = xk_multi_on_const + lambda_mult_const2
 
+        vector_for_xk.append(xk)
         self.string_add_in_file_projection(count=count, xk1=xk, file_name=file_name,alpha=alpha)
 
         # print(f"lambda_k:\t{my_lambda}\talpha_k:\t{alpha}\ngrad_k:{grad}\n"
@@ -298,8 +290,8 @@ class Optimization():
 
             grad = self.gradient_3(xk)
 
-            xk_multi_on_const = xk - multiply_on_const(grad, alph=alpha)
-            lambda_mult_const2 = multiply_on_const(vector_const2[0:3], alph=my_lambda)
+            xk_multi_on_const = xk - grad * alpha
+            lambda_mult_const2 = np.array(vector_const2[0:3]) * my_lambda
 
             xk = xk_multi_on_const + lambda_mult_const2
 
@@ -307,5 +299,7 @@ class Optimization():
             self.string_add_in_file_projection(count=count, xk1=xk, file_name=file_name, alpha=alpha)
 
             vector_for_xk.append(xk)
+
+        create_arrows(vector_for_xk)
 
         return xk

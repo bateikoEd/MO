@@ -30,4 +30,5 @@ xk = np.array([1, -1, -2])
 print(f"xo:\t{xk}")
 xk = object.gradient_projection_method(xk, vector_const2=vector_const2,
                                                               alpha=alpha)
+show_plot()
 print(substitution(xk))
