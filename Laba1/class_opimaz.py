@@ -28,6 +28,12 @@ def create_arrows(vector_x, name_text='none', arrow_style="->", color='r'):
 def show_plot():
     plt.show()
 
+def derivative_n(func, x, n, h=10**(-5)):
+    if n == 0:
+        return np.float(func(x))
+    func1 = lambda y: np.float(0.5 * (func(y + h) - func(y - h)) / h)
+    return derivative_n(func1, x, n - 1)
+
 
 class Optimization():
     matrix_A = np.array([[4, -0.01], [-0.01, 16]], dtype=float)
@@ -202,7 +208,7 @@ class Optimization():
 
     def newton_method(self, xk1=None, alpha=1, epsilon=0.01, file_name='newton_method.txt', color='g'):
         if xk1 is None:
-            xk1 = [0, 0]
+            xk1 = np.zeros(2)
 
         double_derivation_matrix = self.double_derivation_function(xk1)
         vector_h1 = npl.tensorsolve(double_derivation_matrix, - self.gradient(xk1))
@@ -245,7 +251,7 @@ class Optimization():
 
     def gradient_projection_method(self, xk=None, vector_const2=None, alpha=1, file_name="projection_mathod.txt"):
         if xk is None:
-            xk = np.array([0., 0, 0])
+            xk = np.zeros(3)
         if vector_const2 is None:
             vector_const1 = np.array([1., 1, 1, 1])
 
@@ -301,5 +307,65 @@ class Optimization():
             vector_for_xk.append(xk)
 
         create_arrows(vector_for_xk)
+
+        return xk
+
+    def gradient_method_for_one_dimention(self, func, xk=None, alpha=1):
+        if xk is None:
+            xk = 5
+        hk = - derivative_n(func=func, x=xk, n=1)
+        xk = xk + 0.5 * alpha * hk
+
+        print(f"xk:\t{xk}\tfunc:{func(xk)}")
+
+        while np.abs(hk) > self.h :
+            hk = - derivative_n(func=func, x=xk, n=1)
+            xk = xk + 0.5 * alpha * hk
+
+            print(f"xk:\t{xk}\tfunc:{func(xk)}")
+
+        if xk > 0:
+            return xk
+        return 10**(-3)
+
+    def conjugated_gradient_method(self, xk0=None, file_name='conjugated_gradient_method.txt', color='r'):
+        if xk0 is None:
+            xk0 = np.zeros(2)
+
+        n = len(xk0)
+
+        hk = - self.gradient(xk0)
+
+        # func1 = lambda x: self.func(xk0 + x * hk)
+
+        alpha_k = self.gradient_method_for_one_dimention(func=lambda x: self.func(xk0 + x * hk))
+
+        xk_1 = xk0
+        xk = xk0 + alpha_k * hk
+
+        print(f"count:\t{0}\txk:\t{xk}\talpha:\t{alpha_k}\tfunc:\t{self.func(xk)}\t")
+
+        count = 1
+        while npl.norm(hk) > self.h:
+
+            grad_xk = self.gradient(xk)
+            if count % n != 0 :
+                betta_k = (1/npl.norm(grad_xk)**2) * np.dot(grad_xk, grad_xk - self.gradient(xk_1))
+            else:
+                betta_k = 0
+
+            func1 = lambda ak: self.func(xk + ak * hk)
+
+            hk = - grad_xk + betta_k * hk
+
+            alpha_k = self.gradient_method_for_one_dimention(func1)
+
+            xk_1 = xk
+            xk = xk + alpha_k * hk
+
+            print(f"count:\t{count}\txk:\t{xk}\talpha:\t{alpha_k}\tbetta_k:\t{betta_k}\tfunc:\t{self.func(xk)}\t")
+
+            count += 1
+
 
         return xk
