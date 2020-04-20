@@ -369,11 +369,11 @@ class Optimization():
 
 
         return xk
-    def symplex_method(self,A,c,b,x0):
-        A = np.array(A)
-        c = np.array(c)
-        b = np.array(b)
-        x0 = np.array(x0)
+    def symplex_method(self,A,c,b0,x0):
+        A = np.array(A,dtype=float)
+        c = np.array(c,dtype=float)
+        b = np.array(b0,dtype=float)
+        x0 = np.array(x0,dtype=float)
 
         m = A.shape[0]
         n = A.shape[1]
@@ -384,35 +384,78 @@ class Optimization():
             basis = np.identity(l - m)
             A = np.append(A, basis, axis=1)
 
-        print(f"m:\t{m}\nn:{n}\nl:\t{l}\nA:\n{A}\nb:\n{b}\ncount_of:\n{count_of_basis_vectors}")
-        print(f"count[0]:\t{count_of_basis_vectors[0]}\tcount[1]:\t{count_of_basis_vectors[-1]}\nshape:\t{(n,1)}")
+        print(f"m:\t{m}\nn:{n}\nl:\t{l}\nA:\n{A}\nb:\n{b}")
         delta = np.sum(A * np.reshape(c[count_of_basis_vectors[0] : count_of_basis_vectors[-1] + 1] , (n,1)), axis=0) - c
+        # print(f"delta:\n{delta}")
+        x = np.zeros((l, 1))
+        for i, elem in enumerate(count_of_basis_vectors):
+            x[elem] = b[i]
+        print(f"func:\t{np.dot(c,x)}")
+        # iteration
+        count = 0
+        while True:
+            print(f"\n----------coutn:{count}-----------\n")
+            max_index = np.where(delta == np.max(delta))[0][0]
 
-        max_index = np.where(delta == np.max(delta))[0][0]
+            # print(f"max_after:\t{max_index}")
+            # find count of vector with need to swap
+            x_divide_on_coeficients = np.array([elem[max_index] for elem in A])
 
-        # find count of vector with need to swap
-        x_divide_on_coeficients = np.array([elem[max_index] for elem in A])
+            # x_divide_on_coeficients = b / x_divide_on_coeficients
 
-        temp = b/ x_divide_on_coeficients
-        min_in_swap = np.min(temp)
-        swap_index = np.where(temp == min_in_swap)[0][0]
+            for i in range(0,b.size):
+                if x_divide_on_coeficients[i] == 0:
+                    x_divide_on_coeficients[i] = 1e+10
+                else:
+                    x_divide_on_coeficients[i] = b[i] / x_divide_on_coeficients[i]
+            # print(f"x/divide:\t{x_divide_on_coeficients}")
+            min_in_swap = np.min(x_divide_on_coeficients)
+            swap_index = np.where(x_divide_on_coeficients == min_in_swap)[0][0]
+            print(f"swap_index:\t{swap_index}\nmax_index:\t{max_index}")
+            # basic_vector = np.array([elem[swap_index] for elem in A])
 
-        basic_vector = np.array([elem[swap_index] for elem in A])
+            count_of_basis_vectors = np.delete(count_of_basis_vectors, swap_index)
+            count_of_basis_vectors = np.append(count_of_basis_vectors, max_index)
+            count_of_basis_vectors = np.sort(count_of_basis_vectors)
 
-        count_of_basis_vectors = np.delete(count_of_basis_vectors, swap_index)
-        count_of_basis_vectors = np.append(count_of_basis_vectors, max_index)
-        count_of_basis_vectors = np.sort(count_of_basis_vectors)
+            # print(f"count_of:\n{count_of_basis_vectors}")
+            # print(f"lamda_of_coef:\t{A[swap_index][max_index]}")
+            main_coef = A[swap_index][max_index]
 
-        for i, elem in enumerate(A):
-            if i == swap_index:
-                A[i] = A[i] / A[swap_index][max_index]
-                b[i] = b[i] / A[swap_index][max_index]
-                continue
-            A[i] = A[i] - A[i][max_index] * A[swap_index]
-            b[i] = b[i] - A[i][max_index] * b[swap_index]
+            list_of_coef = np.array([A[i][max_index] for i, elem in enumerate(A)])
+            print(f"main_coef:\t{main_coef}")
+            A[swap_index] = A[swap_index] / main_coef
+            b[swap_index] = b[swap_index] / main_coef
 
-        delta = np.sum(A * np.reshape(c[count_of_basis_vectors[0] : count_of_basis_vectors[-1] + 1], (n,1)), axis=0) - c
-        print(f"A\n{A}\ndelta:\n{delta}")
+            print(f"count:\t{count}OOOOOOOOOOOO\nA:\n{A}\nb\n{b}")
+            for i, elem in enumerate(A):
+                if i == swap_index:
+                    continue
+                A[i] = A[i] - list_of_coef[i] * A[swap_index]
+                b[i] = b[i] - list_of_coef[i] * b[swap_index]
 
+            print("---------------------")
+            new_vec = np.array([c[elem] for elem in count_of_basis_vectors])
+            delta = np.sum(A * np.reshape(new_vec, (n,1)), axis=0) - c
+            print(f"A:\n{A}\nb:\n{b}\ndelta:\n{delta}")
 
+            # condition
+            x = np.zeros((l, 1))
+            for i, elem in enumerate(count_of_basis_vectors):
+                x[elem] = b[i]
+            print(f"func:\t{np.dot(c, x)}")
+
+            if (delta <= 0).all() == True:
+                print(f"Finded solution:\n{x}")
+                return x
+            elif (delta > 0).any() == True:
+                res_of_more_than_0 = delta > 0
+                number_index_more_than_0 = np.where(res_of_more_than_0 == True)[0]
+                for elem in number_index_more_than_0:
+                    current_columb = np.array([row[elem] for row in A])
+                    if (current_columb > 0).any() == True:
+                        continue
+                    elif (current_columb <= 0).all() == True:
+                        print("solution does not exist")
+                        return None
 
