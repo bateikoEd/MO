@@ -369,3 +369,50 @@ class Optimization():
 
 
         return xk
+    def symplex_method(self,A,c,b,x0):
+        A = np.array(A)
+        c = np.array(c)
+        b = np.array(b)
+        x0 = np.array(x0)
+
+        m = A.shape[0]
+        n = A.shape[1]
+        l = c.size
+
+        count_of_basis_vectors = np.array([x for x in range(m,l)])
+        if l > m:
+            basis = np.identity(l - m)
+            A = np.append(A, basis, axis=1)
+
+        print(f"m:\t{m}\nn:{n}\nl:\t{l}\nA:\n{A}\nb:\n{b}\ncount_of:\n{count_of_basis_vectors}")
+        print(f"count[0]:\t{count_of_basis_vectors[0]}\tcount[1]:\t{count_of_basis_vectors[-1]}\nshape:\t{(n,1)}")
+        delta = np.sum(A * np.reshape(c[count_of_basis_vectors[0] : count_of_basis_vectors[-1] + 1] , (n,1)), axis=0) - c
+
+        max_index = np.where(delta == np.max(delta))[0][0]
+
+        # find count of vector with need to swap
+        x_divide_on_coeficients = np.array([elem[max_index] for elem in A])
+
+        temp = b/ x_divide_on_coeficients
+        min_in_swap = np.min(temp)
+        swap_index = np.where(temp == min_in_swap)[0][0]
+
+        basic_vector = np.array([elem[swap_index] for elem in A])
+
+        count_of_basis_vectors = np.delete(count_of_basis_vectors, swap_index)
+        count_of_basis_vectors = np.append(count_of_basis_vectors, max_index)
+        count_of_basis_vectors = np.sort(count_of_basis_vectors)
+
+        for i, elem in enumerate(A):
+            if i == swap_index:
+                A[i] = A[i] / A[swap_index][max_index]
+                b[i] = b[i] / A[swap_index][max_index]
+                continue
+            A[i] = A[i] - A[i][max_index] * A[swap_index]
+            b[i] = b[i] - A[i][max_index] * b[swap_index]
+
+        delta = np.sum(A * np.reshape(c[count_of_basis_vectors[0] : count_of_basis_vectors[-1] + 1], (n,1)), axis=0) - c
+        print(f"A\n{A}\ndelta:\n{delta}")
+
+
+
