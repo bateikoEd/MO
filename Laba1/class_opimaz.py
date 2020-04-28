@@ -369,26 +369,31 @@ class Optimization():
 
 
         return xk
-    def simplex_method(self,A,c,b0,x0):
+    def simplex_method(self,A,c,b0):
         A = np.array(A,dtype=float)
         c = np.array(c,dtype=float)
         b = np.array(b0,dtype=float)
-        x0 = np.array(x0,dtype=float)
 
         m = A.shape[0]
         n = A.shape[1]
-        l = c.size
+        l = c.shape[0]
 
         b = b.reshape((b.shape[0],1))
+        A = A.reshape(m,n)
         count_of_basis_vectors = np.array([x for x in range(m,l)])
-        if l > m:
-            basis = np.identity(l - m)
-            A = np.append(A, basis, axis=1)
+        if l == n:
+            count_of_basis_vectors = np.array([x for x in range(n - l + m - 1, n)])
+        elif n > l:
+            count_of_basis_vectors = np.array([x for x in range(n - l + m - 1, n - l + 1)])
 
+
+        print(f"count:\n{count_of_basis_vectors}")
         A0 = A
         b0 = b
         print(f"m:\t{m}\nn:{n}\nl:\t{l}\nA:\n{A}\nb:\n{b}")
-        delta = np.sum(A * np.reshape(c[count_of_basis_vectors[0] : count_of_basis_vectors[-1] + 1] , (n,1)), axis=0) - c
+        new_vec = np.array([c[elem] for elem in count_of_basis_vectors])
+        delta = np.sum(A * np.reshape(new_vec, (m, 1)), axis=0)
+        delta = delta - c
         # print(f"delta:\n{delta}")
         x = np.zeros((l, 1))
         for i, elem in enumerate(count_of_basis_vectors):
@@ -441,7 +446,7 @@ class Optimization():
 
             print("-------after changing basis--------------")
             new_vec = np.array([c[elem] for elem in count_of_basis_vectors])
-            delta = np.sum(A * np.reshape(new_vec, (n,1)), axis=0) - c
+            delta = np.sum(A * np.reshape(new_vec, (m,1)), axis=0) - c
             print(f"A:\n{A}\nb:\n{b}\ndelta:\n{delta}")
 
             count += 1

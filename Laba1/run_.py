@@ -27,10 +27,10 @@ func = lambda x: np.float(2 * x[0] ** 2 + 8 * x[1] ** 2 - 0.01*x[0]*x[1] + x[0] 
 # xk = object.conjugated_gradient_method()
 # print(f"xk:\t{xk}")
 
-A = [[2,1], [1,3]]
-c = [1,-1,2,3]
-b = [1,2]
-x0 = [0,0,1,2]
+A = [[1,1,1]]
+c = [1,2]
+b = [1]
+# x0 = [0,0,1,2]
 
 object = Optimization(func,h=1e-5)
-res = object.simplex_method(A,c,b,x0)
+res = object.simplex_method(A,c,b)
