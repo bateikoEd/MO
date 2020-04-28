@@ -33,4 +33,4 @@ b = [1,2]
 x0 = [0,0,1,2]
 
 object = Optimization(func,h=1e-5)
-object.symplex_method(A,c,b,x0)
+res = object.simplex_method(A,c,b,x0)

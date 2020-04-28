@@ -28,7 +28,7 @@ def create_arrows(vector_x, name_text='none', arrow_style="->", color='r'):
 def show_plot():
     plt.show()
 
-def derivative_n(func, x, n, h=10**(-5)):
+def derivative_n(func, x, n, h=1e-5):
     if n == 0:
         return np.float(func(x))
     func1 = lambda y: np.float(0.5 * (func(y + h) - func(y - h)) / h)
@@ -369,7 +369,7 @@ class Optimization():
 
 
         return xk
-    def symplex_method(self,A,c,b0,x0):
+    def simplex_method(self,A,c,b0,x0):
         A = np.array(A,dtype=float)
         c = np.array(c,dtype=float)
         b = np.array(b0,dtype=float)
@@ -379,29 +379,31 @@ class Optimization():
         n = A.shape[1]
         l = c.size
 
+        b = b.reshape((b.shape[0],1))
         count_of_basis_vectors = np.array([x for x in range(m,l)])
         if l > m:
             basis = np.identity(l - m)
             A = np.append(A, basis, axis=1)
 
+        A0 = A
+        b0 = b
         print(f"m:\t{m}\nn:{n}\nl:\t{l}\nA:\n{A}\nb:\n{b}")
         delta = np.sum(A * np.reshape(c[count_of_basis_vectors[0] : count_of_basis_vectors[-1] + 1] , (n,1)), axis=0) - c
         # print(f"delta:\n{delta}")
         x = np.zeros((l, 1))
         for i, elem in enumerate(count_of_basis_vectors):
             x[elem] = b[i]
-        print(f"func:\t{np.dot(c,x)}")
+        print(f"delta:\n{delta}\nfunc:\t{np.dot(c,x)}")
         # iteration
         count = 0
         while True:
             print(f"\n----------coutn:{count}-----------\n")
             max_index = np.where(delta == np.max(delta))[0][0]
-
+            if count == 0:
+                max_index = 0
             # print(f"max_after:\t{max_index}")
             # find count of vector with need to swap
             x_divide_on_coeficients = np.array([elem[max_index] for elem in A])
-
-            # x_divide_on_coeficients = b / x_divide_on_coeficients
 
             for i in range(0,b.size):
                 if x_divide_on_coeficients[i] == 0:
@@ -423,22 +425,26 @@ class Optimization():
             main_coef = A[swap_index][max_index]
 
             list_of_coef = np.array([A[i][max_index] for i, elem in enumerate(A)])
-            print(f"main_coef:\t{main_coef}")
+            print(f"main_coef:\t{main_coef}\n A[swap_index]:\n{A[swap_index]}"
+                  f"\nb[swap_index]:\t{b[swap_index]}")
             A[swap_index] = A[swap_index] / main_coef
             b[swap_index] = b[swap_index] / main_coef
+            # print(f"main:A:\n{A}\nb\n{b}")
 
-            print(f"count:\t{count}OOOOOOOOOOOO\nA:\n{A}\nb\n{b}")
-            for i, elem in enumerate(A):
+            for i, elem in enumerate(A,0):
                 if i == swap_index:
                     continue
+                # print(f"change A\nA[i]\n{A[i]}\nb[i]:\n{b[i]}")
                 A[i] = A[i] - list_of_coef[i] * A[swap_index]
                 b[i] = b[i] - list_of_coef[i] * b[swap_index]
+                # print(f"change A res:\nA[i]\n{A[i]}\nb[i]:\n{b[i]}")
 
-            print("---------------------")
+            print("-------after changing basis--------------")
             new_vec = np.array([c[elem] for elem in count_of_basis_vectors])
             delta = np.sum(A * np.reshape(new_vec, (n,1)), axis=0) - c
             print(f"A:\n{A}\nb:\n{b}\ndelta:\n{delta}")
 
+            count += 1
             # condition
             x = np.zeros((l, 1))
             for i, elem in enumerate(count_of_basis_vectors):
@@ -446,7 +452,8 @@ class Optimization():
             print(f"func:\t{np.dot(c, x)}")
 
             if (delta <= 0).all() == True:
-                print(f"Finded solution:\n{x}")
+                print(f"Found solution:\n{x}")
+                print(f'checking condition:\n{np.dot(A0, x) - b0}')
                 return x
             elif (delta > 0).any() == True:
                 res_of_more_than_0 = delta > 0
